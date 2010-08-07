@@ -1,0 +1,23 @@
+***********************
+		WEBTOP
+***********************
+
+Webtop is a work in progress online desktop written in JavaScript.
+
+3rd party applications are welcome by writing it as one would for a normal browser window
+and not using server side language. APIs are available for storage and interacting with the
+desktop environment.
+
+----
+API
+----
+
+Webtop.
+	fs.
+		readFile(path)
+		writeFile(path, contents [,flags])
+		deleteFile(path)
+		moveFile(path, destination)
+	api.
+		getTasks()
+		findTask(id)
