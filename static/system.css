@@ -1,0 +1,26 @@
+/* Webtop Defaults */
+* { margin:0; padding:0 }
+html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family:Arial; font-size:14px }
+a { outline: 0 }
+/* Window Properties */
+.window { 
+	border:1px solid #000; position:absolute; background: #efefef;
+	-moz-border-radius-topleft:3px; -webkit-border-top-left-radius:4px;
+	-moz-border-radius-topright:3px; -webkit-border-top-right-radius:4px 
+}
+.hidden { border-width:0; -moz-border-radius-topleft:0; -webkit-border-top-left-radius:0;
+	-moz-border-radius-topright:0; -webkit-border-top-right-radius:0 }
+
+.window-header { border:1px solid #000; cursor:default; padding:2px; height:20px; margin:-1px -1px 0 -1px; background:#70C3FA; 
+	-moz-border-radius-topleft:3px; -webkit-border-top-left-radius:4px;
+	-moz-border-radius-topright:3px; -webkit-border-top-right-radius:4px  
+}
+.window-header strong { float:left; padding:1px 0 0 5px }
+.window-header span { float:right; margin:5px 5px 0 0; display:block; width:100px; height:18px; text-align:right }
+.window-header span a { border:1px solid #000; padding:0 3px 1px 3px; text-decoration:none; line-height:6px; font-size:10px; margin-right:3px }
+div.window-inner { width:100%; }
+div.window-inner iframe { width:100%; height:100%  }
+
+.loading { background:#efefef url('ajax-loader.gif') no-repeat 50% 50%; }
+.drag { background:#70C3FA; opacity:0.8;  }
+.hidden { display:none }
