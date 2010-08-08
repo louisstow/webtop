@@ -1,4 +1,4 @@
-(function($) {
+(function($, window, undefined) {
 
 /**
 * Webtop Namespace
@@ -202,4 +202,4 @@ var Webtop = (function() {
 
 
 window.Webtop = Webtop;
-})(jQuery);
+})(jQuery, window);
