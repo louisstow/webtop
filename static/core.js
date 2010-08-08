@@ -15,72 +15,75 @@ var Webtop = (function() {
 			DEFAULT = 1,
 			MAXIMIZED = 2;
 		
-		/**
-		* Get a running app by its task index
-		* @param id Task index
-		* @return Object manipulation methods
-		*/
-		function get(id) {
-			var app = tasks[id];
-			return {
-				close: function() {
-					if(app) {
-						doc.body.removeChild(app.node);
-						delete tasks[id]; //remove from tasks array
-						z--;
-					}
-				},
-				
-				maximize: function() {
-					if(app.state !== MAXIMIZED) {
-						$(app.node).css({width: "100%", height: "100%", left: "0px", top: "0px"});
-						$("div.window-inner",app.node).css({height: "100%", width: "100%"});
-						app.state = MAXIMIZED;
-						app.node.style.zIndex = z++;
-						
-						$(app.node).draggable("option","disabled", true).resizable("option", "disabled", true);
-					} else {
-						this.restore();
-						$(app.node).draggable("option","disabled", false).resizable("option", "disabled", false);
-					}
-				},
-				
-				minimize: function() {
-					$(app.node).hide("fast");
-					app.state *= -1; //flip the state
-				},
-				
-				focus: function() {
-					$(app.node).show("fast");
-					app.node.style.zIndex = z++;
-				},
-				
-				restore: function() {
-					this.focus();
-					if(app.state === MAXIMIZED) { //if task wasn't maximized
-						$(app.node).css({width: app.dim.w, height: app.dim.h + PX, left: app.dim.x + PX, top: app.dim.y + PX});
-						
-						var w = $('div.window-inner', app.node),
-							h = w.hasClass("full") ? 0 : HEADER_HEIGHT; //if has class full, header isn't visible
-						
-						w.css({width: app.dim.w, height:app.dim.h - h + PX});
-						app.state = DEFAULT;
-					}
-					app.state = Math.abs(app.state);
-				},
-				
-				props: {
-					x: app.dim.x,
-					y: app.dim.y,
-					w: app.dim.w,
-					h: app.dim.h,
-					state: app.state
-				}
-			};
-		}
+		
 		
 		//Public methods and properties
 		return {
+		
+			/**
+			* Get a running app by its task index
+			* @param id Task index
+			* @return Object manipulation methods
+			*/
+			get: function(id) {
+				var app = tasks[id];
+				return {
+					close: function() {
+						if(app) {
+							doc.body.removeChild(app.node);
+							delete tasks[id]; //remove from tasks array
+							z--;
+						}
+					},
+					
+					maximize: function() {
+						if(app.state !== MAXIMIZED) {
+							$(app.node).css({width: "100%", height: "100%", left: "0px", top: "0px"});
+							$("div.window-inner",app.node).css({height: "100%", width: "100%"});
+							app.state = MAXIMIZED;
+							app.node.style.zIndex = z++;
+							
+							$(app.node).draggable("option","disabled", true).resizable("option", "disabled", true);
+						} else {
+							this.restore();
+							$(app.node).draggable("option","disabled", false).resizable("option", "disabled", false);
+						}
+					},
+					
+					minimize: function() {
+						$(app.node).hide("fast");
+						app.state *= -1; //flip the state
+					},
+					
+					focus: function() {
+						$(app.node).show("fast");
+						app.node.style.zIndex = z++;
+					},
+					
+					restore: function() {
+						this.focus();
+						if(app.state === MAXIMIZED) { //if task wasn't maximized
+							$(app.node).css({width: app.dim.w, height: app.dim.h + PX, left: app.dim.x + PX, top: app.dim.y + PX});
+							
+							var w = $('div.window-inner', app.node),
+								h = w.hasClass("full") ? 0 : HEADER_HEIGHT; //if has class full, header isn't visible
+							
+							w.css({width: app.dim.w, height:app.dim.h - h + PX});
+							app.state = DEFAULT;
+						}
+						app.state = Math.abs(app.state);
+					},
+					
+					props: {
+						x: app.dim.x,
+						y: app.dim.y,
+						w: app.dim.w,
+						h: app.dim.h,
+						state: app.state
+					}
+				};
+			},
+		
 			run: function(id) {
 				//Create the root DIV
 				var obj = doc.createElement("div"), 
@@ -90,7 +93,7 @@ var Webtop = (function() {
 				if(options.single) { //if single instance, look for one opened
 					var found = this.api.findTask(id);
 					if(found) {
-						get(found[0]).restore();
+						this.get(found[0]).restore();
 						return;
 					}
 				}
@@ -109,9 +112,9 @@ var Webtop = (function() {
 				//create the iframe
 				var iframe = doc.createElement("iframe"), inner = $('div.window-inner', obj);
 				
-				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: "app.php?id="+id+(new Date()).getTime() }).hide();
+				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: "app.php?id="+id+"&c="+(new Date()).getTime() }).hide();
 				//iframe.src = "http://280slides.com/Editor/";
-				iframe.src = "http://sketch.processing.org/";
+				//iframe.src = "http://sketch.processing.org/";
 				
 				inner.append(iframe).css("height", options.height - HEADER_HEIGHT + PX);
 				
@@ -123,7 +126,7 @@ var Webtop = (function() {
 				doc.body.appendChild(obj);
 				
 				//Create closure of apps window controls
-				var controls = get(tasks.length-1);
+				var controls = this.get(tasks.length-1);
 				$("a.min",obj).click(function(){ controls.minimize(); });
 				$("a.max",obj).click(function(){ controls.maximize(); });
 				$("a.close",obj).click(function() { controls.close(); });

@@ -1,0 +1,18 @@
+<link href="static/system.css" type="text/css" rel="stylesheet" />
+<script>
+window.onload = function() {
+	var t = Webtop.api.getTasks(),i=0,l,
+		obj = document.getElementById('tasks'),
+		inner = '';
+	for(l=t.length;i<l;i++) {
+		if(t[i]) {
+			var id = t[i].id;
+			inner += '<li><a href="#" onclick="Webtop.get('+i+').restore()">'+id+'</a></li>';
+		}
+	}
+	obj.innerHTML = inner;
+};
+</script>
+
+<button id="start-button">Start</button>
+<ul id="tasks"></ul>

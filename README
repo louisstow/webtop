@@ -1,5 +1,5 @@
 ***********************
-		WEBTOP
+        WEBTOP
 ***********************
 
 Webtop is a work in progress online desktop written in JavaScript.
@@ -8,9 +8,9 @@ Webtop is a work in progress online desktop written in JavaScript.
 and not using server side language. APIs are available for storage and interacting with the
 desktop environment.
 
-----
-API
-----
+-----
+ API
+-----
 
 Webtop.
 	fs.
