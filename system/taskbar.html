@@ -1,16 +1,29 @@
 <link href="static/system.css" type="text/css" rel="stylesheet" />
 <script>
-window.onload = function() {
+function draw() {
 	var t = Webtop.api.getTasks(),i=0,l,
 		obj = document.getElementById('tasks'),
 		inner = '';
 	for(l=t.length;i<l;i++) {
-		if(t[i]) {
-			var id = t[i].id;
-			inner += '<li><a href="#" onclick="Webtop.get('+i+').restore()">'+id+'</a></li>';
+		
+		if(t[i] && t[i].id) {
+			var id = t[i].id,
+				opts = Webtop.api.taskOptions(t[i].id);
+			
+			if(!opts.system) {
+				inner += '<li><a href="#" onclick="Webtop.get('+i+').restore()">'+opts.title+'</a></li>';
+			}
 		}
 	}
 	obj.innerHTML = inner;
+}
+
+window.onload = function() {
+	Webtop.events.attach(this, Webtop.c('NEW_TASK'), function() {
+		console.log("New task");
+		draw();
+	});
+	draw();
 };
 </script>
 

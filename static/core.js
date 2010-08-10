@@ -7,13 +7,24 @@
 var Webtop = (function() {
 		//Private methods and properties
 		var tasks = [], //array of current tasks
+			handlers = [], //array of event handlers
 			z = 0, //z-index counter
 			guid = 1, //unique ID for general use
 			doc = window.document,
 			PX = "px",
-			HEADER_HEIGHT = 25, //height of window header in PX
-			DEFAULT = 1,
-			MAXIMIZED = 2;
+			//Webtop = Webtop, //for minification
+			consts = {
+				HEADER_HEIGHT: 25, //height of window header in PX
+				DEFAULT: 1,
+				MAXIMIZED: 2,
+				
+				//Events
+				NEW_TASK: 0,
+				RIGHT_CLICK: 1,
+				TASK_MINIMIZED: 3,
+				TASK_MAXIMIZED: 4,
+				TASK_RESTORED: 5
+			};
 		
 		
 		
@@ -37,10 +48,10 @@ var Webtop = (function() {
 					},
 					
 					maximize: function() {
-						if(app.state !== MAXIMIZED) {
+						if(app.state !== Webtop.c('MAXIMIZED')) {
 							$(app.node).css({width: "100%", height: "100%", left: "0px", top: "0px"});
 							$("div.window-inner",app.node).css({height: "100%", width: "100%"});
-							app.state = MAXIMIZED;
+							app.state = Webtop.c('MAXIMIZED');
 							app.node.style.zIndex = z++;
 							
 							$(app.node).draggable("option","disabled", true).resizable("option", "disabled", true);
@@ -62,14 +73,14 @@ var Webtop = (function() {
 					
 					restore: function() {
 						this.focus();
-						if(app.state === MAXIMIZED) { //if task wasn't maximized
+						if(app.state === Webtop.c('MAXIMIZED')) { //if task wasn't maximized
 							$(app.node).css({width: app.dim.w, height: app.dim.h + PX, left: app.dim.x + PX, top: app.dim.y + PX});
 							
 							var w = $('div.window-inner', app.node),
-								h = w.hasClass("full") ? 0 : HEADER_HEIGHT; //if has class full, header isn't visible
+								h = w.hasClass("full") ? 0 : Webtop.c('HEADER_HEIGHT'); //if has class full, header isn't visible
 							
 							w.css({width: app.dim.w, height:app.dim.h - h + PX});
-							app.state = DEFAULT;
+							app.state = Webtop.c('DEFAULT');
 						}
 						app.state = Math.abs(app.state);
 					},
@@ -107,7 +118,7 @@ var Webtop = (function() {
 					$(obj).css(options.css);
 				}
 				//push the task to the task list
-				tasks.push({id: id, node: obj, dim: {w: options.width, h: options.height, x: 10, y: 10}, state: DEFAULT});
+				tasks.push({id: id, node: obj, dim: {w: options.width, h: options.height, x: 10, y: 10}, state: Webtop.c('DEFAULT')});
 				
 				//create the iframe
 				var iframe = doc.createElement("iframe"), inner = $('div.window-inner', obj);
@@ -116,7 +127,7 @@ var Webtop = (function() {
 				//iframe.src = "http://280slides.com/Editor/";
 				//iframe.src = "http://sketch.processing.org/";
 				
-				inner.append(iframe).css("height", options.height - HEADER_HEIGHT + PX);
+				inner.append(iframe).css("height", options.height - Webtop.c('HEADER_HEIGHT') + PX);
 				
 				//Remove the header
 				if(options.header === false) {
@@ -171,7 +182,7 @@ var Webtop = (function() {
 					$(obj).resizable({containment:'document', autoHide: true, alsoResize: inner,
 						start: function() {
 							startGhost(this);
-							if(tasks[index].state === MAXIMIZED) {
+							if(tasks[index].state === Webtop.c('MAXIMIZED')) {
 								controls.maximize();
 							}
 						}, 
@@ -183,6 +194,8 @@ var Webtop = (function() {
 						}
 					});
 				}
+				//last but not least, fire event
+				Webtop.events.dispatch(Webtop.c('NEW_TASK')); 
 			},
 			
 			api: {
@@ -198,7 +211,40 @@ var Webtop = (function() {
 				
 				getTasks: function() {
 					return tasks;
+				},
+				
+				taskOptions: function(id) {
+					return APPLIST[id];
 				}
+			},
+			
+			events: {
+			
+				attach: function(obj, id, handler) {
+					if(handlers[id] === undefined) handlers[id] = []; //init handler array
+					handlers[id].push({obj: obj, handler: handler});
+					
+				},
+				
+				dispatch: function(id, value) {
+					
+					var h = handlers[id], i = 0, l, attached;
+					console.log(h);
+					if(h !== undefined) {
+						for(l = h.length; i<l; i++) {
+							attached = h[i];
+							console.log('dispatch time', attached, attached.handler.toString());
+							attached.handler.call(attached.obj);
+						}
+					}
+				}
+			},
+			
+			/**
+			* Return a constant
+			*/
+			c: function(name) {
+				return consts[name];
 			}
 		};
 })();

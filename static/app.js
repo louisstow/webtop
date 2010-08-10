@@ -26,6 +26,7 @@ var APPLIST = {
 		alwaysOntop: true,
 		draggable:false,
 		resizable: false,
+		system: true,
 		css: {
 			left: 0,
 			bottom: 0,
