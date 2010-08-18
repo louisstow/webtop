@@ -3,6 +3,11 @@
 
 <head>
 	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<!--[if IE]>
+	<script type="text/javascript">
+	Webtop = parent.Webtop;
+	</script>
+	<![endif]-->
 </head>
 <body>
 <?php

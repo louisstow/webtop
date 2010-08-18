@@ -8,9 +8,12 @@
 * @param child ... n Child elements to nest
 * @return HTML string to use with innerHTML
 */
-var e = function(tag, options) {
-	var html = '<'+tag;
-	var children = Array.prototype.slice.apply(arguments, [(typeof options === "string") ? 1 : 2]);
+var s = Array.prototype.slice,
+e = function(tag, options) {
+	var html = '<'+tag,
+		children = s.apply(arguments, [(typeof options === "string") ? 1 : 2]),
+		i = 0, 
+		l;
 	
 	if(options && typeof options !== "string") {
 		for(var option in options) {
@@ -21,19 +24,20 @@ var e = function(tag, options) {
 	}
 	
 	html += '>';
-	for(var i = 0, l=children.length; i < l; i++) {
+	for(l=children.length; i < l; i++) {
 		html += children[i];
 	}
 	html += '</'+tag+'>';
 	return html;
-};
-
+},
 //array of tags as shorthand for e(<tag>)
-var tags = "div span strong cite em li ul ol table th tr td input form textarea a button iframe".split(" "), i=0;
+tags = "div span strong cite em li ul ol table th tr td input form textarea a button iframe".split(" "), i=0;
+
+
 for(; i < tags.length; i++) {
 	(function(el) { //create closure to keep EL in scope
 		parent[el] = function(args) {
-			args = Array.prototype.slice.call(arguments);
+			args = s.call(arguments);
 			args.unshift(el);
 			return e.apply(this, args);
 		};

@@ -1,9 +1,10 @@
-var APPLIST = {
+APPLIST = {
 	"mYx73s": {
-		title: "WOOOAH",
+		title: "Notepad--",
 		width: "400px",
 		height: 200,
 		single: true,
+		src: 'http://sketch.processing.org/', //delete this
 		css: {
 			top:"50px",
 			left: "50px",
@@ -12,9 +13,10 @@ var APPLIST = {
 	},
 	
 	"coheed": {
-		title: "Year of the Black Rainbow",
+		title: "280 Slides - Untitled",
 		width: "600px",
-		height: 400
+		height: 400,
+		src: 'http://280slides.com/Editor/'
 	},
 	
 	"taskbar": {
@@ -27,10 +29,10 @@ var APPLIST = {
 		draggable:false,
 		resizable: false,
 		system: true,
+		src: 'app.php?id=taskbar',
 		css: {
 			left: 0,
-			bottom: 0,
-			top: 'static',
+			bottom: 0
 		}
 	}
 };

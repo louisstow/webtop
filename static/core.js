@@ -12,9 +12,11 @@ var Webtop = (function() {
 			guid = 1, //unique ID for general use
 			doc = window.document,
 			PX = "px",
-			//Webtop = Webtop, //for minification
+			
+			//READ ONLY constants
 			consts = {
 				HEADER_HEIGHT: 25, //height of window header in PX
+				TASK_BAR_HEIGHT: 50, //height of the taskbar
 				DEFAULT: 1,
 				MAXIMIZED: 2,
 				
@@ -34,23 +36,31 @@ var Webtop = (function() {
 			/**
 			* Get a running app by its task index
 			* @param id Task index
-			* @return Object manipulation methods
+			* @return Object Window manipulation methods
 			*/
 			get: function(id) {
 				var app = tasks[id];
 				return {
+					/**
+					* Close the window
+					*/
 					close: function() {
 						if(app) {
 							doc.body.removeChild(app.node);
 							delete tasks[id]; //remove from tasks array
 							z--;
 						}
+						Webtop.events.dispatch(Webtop.c('NEW_TASK'));
 					},
 					
+					/**
+					* Toggle the maximized state of the window
+					*/
 					maximize: function() {
 						if(app.state !== Webtop.c('MAXIMIZED')) {
-							$(app.node).css({width: "100%", height: "100%", left: "0px", top: "0px"});
-							$("div.window-inner",app.node).css({height: "100%", width: "100%"});
+							var h = $(window).height() - Webtop.c('TASK_BAR_HEIGHT') + PX;
+							$(app.node).css({width: "100%", height: h, left: "0px", top: "0px"});
+							$("div.window-inner",app.node).css({height: h, width: "100%"});
 							app.state = Webtop.c('MAXIMIZED');
 							app.node.style.zIndex = z++;
 							
@@ -61,16 +71,25 @@ var Webtop = (function() {
 						}
 					},
 					
+					/**
+					* Minimize the window
+					*/
 					minimize: function() {
 						$(app.node).hide("fast");
 						app.state *= -1; //flip the state
 					},
 					
+					/**
+					* Focus the window by bringing to front and making visible
+					*/
 					focus: function() {
 						$(app.node).show("fast");
 						app.node.style.zIndex = z++;
 					},
 					
+					/**
+					* Restore the window from minimized state
+					*/
 					restore: function() {
 						this.focus();
 						if(app.state === Webtop.c('MAXIMIZED')) { //if task wasn't maximized
@@ -83,21 +102,18 @@ var Webtop = (function() {
 							app.state = Webtop.c('DEFAULT');
 						}
 						app.state = Math.abs(app.state);
-					},
-					
-					props: {
-						x: app.dim.x,
-						y: app.dim.y,
-						w: app.dim.w,
-						h: app.dim.h,
-						state: app.state
 					}
 				};
 			},
-		
+			
+			/**
+			* Run an application
+			* @param id ID of the application
+			*/
 			run: function(id) {
 				//Create the root DIV
 				var obj = doc.createElement("div"), 
+					$obj = $(obj),
 					options = APPLIST[id],
 					index = tasks.length;
 				
@@ -110,12 +126,12 @@ var Webtop = (function() {
 				}
 				
 				obj.id = "app"+index;
-				$(obj).addClass("window").css({width: options.width, height: options.height + PX, zIndex: (options.alwaysOntop ? 1000 : z++)})
+				$obj.addClass("window").css({width: options.width, height: options.height + PX, zIndex: (options.alwaysOntop ? 1000 : z++)})
 					  .html(div({"class": "window-header"}, strong(options.title), span(a({"class": "min"},"[-]"),a({"class": "max"},"[_]"),a({"class": "close"},"[x]")))+div({"class": "window-inner loading"}));
 				
 				//apply user defined CSS on the main window
 				if(options.css) {
-					$(obj).css(options.css);
+					$obj.css(options.css);
 				}
 				//push the task to the task list
 				tasks.push({id: id, node: obj, dim: {w: options.width, h: options.height, x: 10, y: 10}, state: Webtop.c('DEFAULT')});
@@ -123,9 +139,8 @@ var Webtop = (function() {
 				//create the iframe
 				var iframe = doc.createElement("iframe"), inner = $('div.window-inner', obj);
 				
-				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: "app.php?id="+id+"&c="+(new Date()).getTime() }).hide();
-				//iframe.src = "http://280slides.com/Editor/";
-				//iframe.src = "http://sketch.processing.org/";
+				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: options.src  }).hide();
+				//"app.php?id="+id+"&c="+(new Date()).getTime() // src: ... })
 				
 				inner.append(iframe).css("height", options.height - Webtop.c('HEADER_HEIGHT') + PX);
 				
@@ -143,19 +158,20 @@ var Webtop = (function() {
 				$("a.close",obj).click(function() { controls.close(); });
 				
 				//Give the iframe access to Webtop
-				var iwin = iframe.contentWindow || iframe.contentDocument.defaultView;
+				var iwin = iframe.contentWindow || iframe.contentDocument, $iframe = $(iframe);
 				iwin.Webtop = Webtop;
 				iwin.App = controls;
 				
-				$(iframe).load(function() {
+				//When loading is finished, display iframe
+				$iframe.load(function() {
 					inner.removeClass("loading");
-					$(iframe).show();
+					$iframe.show();
 				});
 				
 				//Add events
 				var _preventDefault = function(evt) { evt.preventDefault(); },
-					startGhost = function(context) { $("iframe", context).hide(); $(context).addClass("drag"); },
-					stopGhost = function(context) { $("iframe", context).show(); $(context).removeClass("drag"); };
+					startGhost = function(context) { $iframe.hide(); $(context).addClass("drag"); },
+					stopGhost = function(context) { $iframe.show(); $(context).removeClass("drag"); };
 				$("div.window-header", obj)
 					.bind("dragstart", _preventDefault)
 					.bind("selectstart", _preventDefault)
@@ -164,7 +180,7 @@ var Webtop = (function() {
 				
 				
 				if(options.draggable !== false) {
-					$(obj).draggable({handle: "div.window-header", scroll:false, containment:'document',
+					$obj.draggable({handle: "div.window-header", scroll:false, containment:'document',
 						start: function() {
 							startGhost(this);
 						},
@@ -179,7 +195,7 @@ var Webtop = (function() {
 				}
 				
 				if(options.resizable !== false) {
-					$(obj).resizable({containment:'document', autoHide: true, alsoResize: inner,
+					$obj.resizable({containment:'document', autoHide: true, alsoResize: inner,
 						start: function() {
 							startGhost(this);
 							if(tasks[index].state === Webtop.c('MAXIMIZED')) {
@@ -229,11 +245,9 @@ var Webtop = (function() {
 				dispatch: function(id, value) {
 					
 					var h = handlers[id], i = 0, l, attached;
-					console.log(h);
 					if(h !== undefined) {
 						for(l = h.length; i<l; i++) {
 							attached = h[i];
-							console.log('dispatch time', attached, attached.handler.toString());
 							attached.handler.call(attached.obj);
 						}
 					}
@@ -245,6 +259,56 @@ var Webtop = (function() {
 			*/
 			c: function(name) {
 				return consts[name];
+			},
+			
+			/**
+			* Context menu
+			* @example Webtop.cm({ }, $('#context-menu'))
+			*/
+			cm: function(menu, trigger, parent) {
+				//create a fragement to append the menu items to
+				var container = doc.createDocumentFragment();
+				if(!parent) {
+					var parent = doc.createElement('ul');
+					doc.body.appendChild(parent);
+					$(parent).hide();
+					trigger.oncontextmenu = function() { return false; };
+					$(trigger).mousedown(function(e) {
+						if(e.which === 3){
+							e.preventDefault();
+							$(parent).show();
+							return false;
+						}
+					});
+				}
+				
+				for(var item in menu) {
+					var child = doc.createElement("li");
+					
+					$(child).text(item).click(function() {
+						$("ul:first",this).show("fast").mousedown(function(e) { e.stopPropagation(); });
+						var that = this;
+						$(this).parent().mousedown(function() { $("ul",that).hide("fast"); });
+						$(doc).mousedown(function() { $("ul:first",that).hide("fast"); });
+						return false;
+					});
+					
+					container.appendChild(child);
+					var cached = menu[item]; //set a reference
+					
+					//set the onclick if item is a function
+					if($.isFunction(cached)) {
+						child.onclick = cached;
+					} else if($.isPlainObject(cached)) { //if its an object, go a level deeper
+						var childparent = doc.createElement("ul");
+						childparent.setAttribute("class", "ui-menu-bar-root");
+						child.appendChild(childparent);
+						this.cm(cached, trigger, childparent);
+					}
+				}
+				
+				parent.appendChild(container);
+				//return this;
 			}
 		};
 })();

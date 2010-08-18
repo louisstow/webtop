@@ -1,0 +1,28 @@
+  ____                  
+ |  _ \                 
+ | |_) |_   _  __ _ ___ 
+ |  _ <| | | |/ _` / __|
+ | |_) | |_| | (_| \__ \
+ |____/ \__,_|\__, |___/
+               __/ |    
+              |___/     
+
+
+10/08 - IFrame stealing mouse events in FF
+FIXED + 10/08 - Bizare Chrome error when maximize a task, and focus another (replace height 100% with fixed value)
+10/08 - Speed issues in FF, related to mouse and opacity
+11/08 - Can't access IFrame Window in IE 
+
+Read about Kohana
+
+
+  _____     _                
+ |_   _|   | |               
+   | |   __| | ___  __ _ ___ 
+   | |  / _` |/ _ \/ _` / __|
+  _| |_| (_| |  __/ (_| \__ \
+ |_____|\__,_|\___|\__,_|___/
+                             
+
+11/08 - Hint for logging in (username, password, hint)
+18/08 - Context menu e.g. Webtop.cm({}, button)
