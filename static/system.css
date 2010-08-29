@@ -1,7 +1,9 @@
 /* Webtop Defaults */
 * { margin:0; padding:0 }
-html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family:Arial; font-size:14px }
+html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family:Arial; font-size:14px; }
+svg, #canvas { margin:0; padding:0; width:100%; height:100%; position:absolute; left:0; top:0; }
 a { outline: 0 }
+
 /* Window Properties */
 .window { 
 	border:1px solid #000; position:absolute; background: #efefef;
@@ -18,6 +20,13 @@ a { outline: 0 }
 .window-header strong { float:left; padding:1px 0 0 5px }
 .window-header span { float:right; margin:5px 5px 0 0; display:block; width:100px; height:18px; text-align:right }
 .window-header span a { border:1px solid #000; padding:0 3px 1px 3px; text-decoration:none; line-height:6px; font-size:10px; margin-right:3px }
+
+.window em { float:left; margin-left:-7px; }
+.window em a { display:block; width:5px; height:5px; margin:5px 5px 5px 0; border-style:solid; border-width:1px 0 1px 1px }
+a.input { background:#FFA800; border-color:#8A5B00 }
+a.output { background:#00A2FF; border-color:#005080 }
+a.over { background:#000 }
+
 div.window-inner { width:100%; }
 div.window-inner iframe { width:100%; height:100%  }
 
@@ -30,49 +39,33 @@ div.window-inner iframe { width:100%; height:100%  }
 #tasks li a { border:1px solid #000; padding:2px 5px }
 #start-button { height:50px; border-right:solid #000; border-width:0 1px 0 0; background:#fff; margin:0 10px 0 0; padding:0 20px 0 10px }
 
-.ui-menu-bar {
+.ui-context-menu {
 	z-index:1000;
-}
-
-.ui-menu-bar ul {
 	padding:3px 0;
 	margin:0;
-	background-color:#eee
+	background-color:#eee;
+	width:150px;
 }
 
-.ui-menu-horiz {
-	background:url('bg.gif') repeat-x;
+.ui-context-menu ul {
+	list-style:none;
 }
 
-.ui-menu-bar ul li {
-	display:inline;
-	margin:0 3px;
-	padding:0 3px;
-	position:relative;
+.ui-context-menu li {
+	background-color:#eee;
 }
 
-.ui-menu-bar ul li ul li {
-	display:block;
-}
-
-.ui-menu-bar ul li ul {
+.ui-context-menu li ul {
 	display:none;
 	position:absolute;
 	z-index:1000;
 	border:1px solid #ccc;
 	width:150px;
+	left:120px;
+	margin-top:-15px
 }
 
-.ui-menu-bar-root {
-	left:0
-}
-
-.ui-menu-bar-sub {
-	left:145px;
-	top:0;
-}
-
-.ui-menu-bar li:hover {
+.ui-context-menu li:hover {
 	background:#C5D0EB;
 }
 

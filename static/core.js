@@ -12,7 +12,9 @@ var Webtop = (function() {
 			guid = 1, //unique ID for general use
 			doc = window.document,
 			PX = "px",
-			
+			pint = parseInt,
+			canvas, //Raphael
+			routes = [], //Array of app associations or 'routes'
 			//READ ONLY constants
 			consts = {
 				HEADER_HEIGHT: 25, //height of window header in PX
@@ -28,7 +30,31 @@ var Webtop = (function() {
 				TASK_RESTORED: 5
 			};
 		
+		$(doc).ready(function() {
+			startup();
+		});
 		
+		/**
+		* Function called on first load
+		*/
+		function startup() {
+			$(doc.body).bind("selectstart", function(evt) { evt.preventDefault(); });
+			canvas = new Raphael("canvas",0, 0, $(window).width(), $(window).height());
+			$("#canvas").mousedown(function(e) {
+				x = e.offsetX;
+				y = e.offsetY;
+				line = new Line(x, y, x, y, canvas);
+				$("#canvas").bind('mousemove', function(e) {
+					x = e.offsetX;
+					y = e.offsetY;
+					line.updateEnd(x, y);
+				});
+			});
+
+			$("#canvas").mouseup(function(e) {
+				$("#canvas").unbind('mousemove');
+			});
+		}
 		
 		//Public methods and properties
 		return {
@@ -115,7 +141,9 @@ var Webtop = (function() {
 				var obj = doc.createElement("div"), 
 					$obj = $(obj),
 					options = APPLIST[id],
-					index = tasks.length;
+					index = tasks.length,
+					input, //connector nodes
+					output;
 				
 				if(options.single) { //if single instance, look for one opened
 					var found = this.api.findTask(id);
@@ -127,7 +155,12 @@ var Webtop = (function() {
 				
 				obj.id = "app"+index;
 				$obj.addClass("window").css({width: options.width, height: options.height + PX, zIndex: (options.alwaysOntop ? 1000 : z++)})
-					  .html(div({"class": "window-header"}, strong(options.title), span(a({"class": "min"},"[-]"),a({"class": "max"},"[_]"),a({"class": "close"},"[x]")))+div({"class": "window-inner loading"}));
+					.html(
+						div({"class": "window-header"},
+							strong(options.title), 
+							span(a({"class": "min"},"[-]"),a({"class": "max"},"[_]"),a({"class": "close"},"[x]")))
+						+div({"class": "window-inner loading"})
+					);
 				
 				//apply user defined CSS on the main window
 				if(options.css) {
@@ -178,18 +211,43 @@ var Webtop = (function() {
 					.bind("mousedown", function() { controls.focus(); })
 					.dblclick(function() { controls.maximize(); });
 				
+				//Add route bubbles
+				if(options.route !== false) {
+					//Beware: Pixel precision magic numbers
+					input = canvas.circle(pint($obj.css("left"))-2,pint($obj.css("top"))+12,5);
+					input.attr({'stroke': '#8A5B00', 'stroke-width': 1, 'fill': '#FFA800'});
+					input.mousedown(function(e) {
+						console.log(e);
+					});
+					
+					output = canvas.circle(pint($obj.css("left"))+pint($obj.css("width"))+4,pint($obj.css("top"))+12,5);
+					output.attr({'stroke': '#005080', 'stroke-width': 1, 'fill': '#00A2FF'});
+				}
+				
 				
 				if(options.draggable !== false) {
 					$obj.draggable({handle: "div.window-header", scroll:false, containment:'document',
 						start: function() {
 							startGhost(this);
+							input.attr({opacity: 0});
+							output.attr({opacity: 0});
+						},
+						
+						drag: function(e) {
+							
 						},
 						
 						stop: function() {
 							stopGhost(this);
 							//update the position of the task
-							tasks[index].dim.x = parseInt($(this).css("left"),10);
-							tasks[index].dim.y = parseInt($(this).css("top"),10);
+							var co = [pint($(this).css("left")), pint($(this).css("top")), $(this).width()];
+							
+							tasks[index].dim.x = co[0];
+							tasks[index].dim.y = co[1];
+							
+							input.attr({cx: co[0] - 2, cy: co[1] + 12, opacity: 1});
+							output.attr({cx: co[0] + co[2] + 4, cy: co[1] + 12, opacity: 1});
+							
 						}
 					});
 				}
@@ -270,8 +328,9 @@ var Webtop = (function() {
 				var container = doc.createDocumentFragment();
 				if(!parent) {
 					var parent = doc.createElement('ul');
+					
 					doc.body.appendChild(parent);
-					$(parent).hide();
+					$(parent).addClass('ui-context-menu').hide();
 					trigger.oncontextmenu = function() { return false; };
 					$(trigger).mousedown(function(e) {
 						if(e.which === 3){
@@ -287,11 +346,12 @@ var Webtop = (function() {
 					
 					$(child).text(item).click(function() {
 						$("ul:first",this).show("fast").mousedown(function(e) { e.stopPropagation(); });
+						
 						var that = this;
 						$(this).parent().mousedown(function() { $("ul",that).hide("fast"); });
-						$(doc).mousedown(function() { $("ul:first",that).hide("fast"); });
+						$(doc).mousedown(function() { $("ul:first",that).hide("fast"); $(that).parent().hide("fast"); });
 						return false;
-					});
+					}).mousedown(function(e) { e.stopPropagation(); });
 					
 					container.appendChild(child);
 					var cached = menu[item]; //set a reference
@@ -313,6 +373,38 @@ var Webtop = (function() {
 		};
 })();
 
+function Line(startX, startY, endX, endY, raphael) {
+    var start = {
+        x: startX,
+        y: startY
+    };
+    var end = {
+        x: endX,
+        y: endY
+    };
+    var getPath = function() {
+        return "M" + start.x + " " + start.y + " L" + end.x + " " + end.y;
+    };
+    var redraw = function() {
+        node.attr("path", getPath());
+    }
+
+    var node = raphael.path(getPath());
+    return {
+        updateStart: function(x, y) {
+            start.x = x;
+            start.y = y;
+            redraw();
+            return this;
+        },
+        updateEnd: function(x, y) {
+            end.x = x;
+            end.y = y;
+            redraw();
+            return this;
+        }
+    };
+};
 
 window.Webtop = Webtop;
 })(jQuery, window);

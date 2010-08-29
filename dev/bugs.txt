@@ -12,6 +12,9 @@
 FIXED + 10/08 - Bizare Chrome error when maximize a task, and focus another (replace height 100% with fixed value)
 10/08 - Speed issues in FF, related to mouse and opacity
 11/08 - Can't access IFrame Window in IE 
+29/08 - Need to link apps together
+29/08 - Must snap within a 5px radius
+29/08 - Musn't draw a line within 2px
 
 Read about Kohana
 
@@ -26,3 +29,5 @@ Read about Kohana
 
 11/08 - Hint for logging in (username, password, hint)
 18/08 - Context menu e.g. Webtop.cm({}, button)
+19/08 - New UI paradigm (scroll based)
+26/08 - NOD (Network Oriented Desktop)

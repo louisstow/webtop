@@ -4,7 +4,7 @@ APPLIST = {
 		width: "400px",
 		height: 200,
 		single: true,
-		src: 'http://sketch.processing.org/', //delete this
+		//src: 'http://sketch.processing.org/', //delete this
 		css: {
 			top:"50px",
 			left: "50px",
@@ -16,7 +16,7 @@ APPLIST = {
 		title: "280 Slides - Untitled",
 		width: "600px",
 		height: 400,
-		src: 'http://280slides.com/Editor/'
+		//src: 'http://280slides.com/Editor/'
 	},
 	
 	"taskbar": {
@@ -29,6 +29,7 @@ APPLIST = {
 		draggable:false,
 		resizable: false,
 		system: true,
+		route: false,
 		src: 'app.php?id=taskbar',
 		css: {
 			left: 0,

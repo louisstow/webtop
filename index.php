@@ -4,6 +4,7 @@
 <head>
 <link type="text/css" href="static/system.css" rel="stylesheet"/>
 <link type="text/css" href="static/jui.css" rel="stylesheet" />
+<script src="static/raphael-min.js"></script>
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
 <script type="text/javascript" src="static/dom.js"></script>
@@ -19,5 +20,7 @@ $(document).ready(function() {
 </head>
 <body>
 <button onclick="Webtop.run('mYx73s')">Run App</button><button onclick="Webtop.run('coheed')">Run App 2</button>
+<div id="canvas"></div>
+
 </body>
 </html>

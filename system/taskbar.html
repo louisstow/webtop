@@ -16,6 +16,14 @@ function draw() {
 		}
 	}
 	obj.innerHTML = inner;
+	
+}
+
+window.onload = function() {
+	Webtop.events.attach(this, Webtop.c('NEW_TASK'), function() {
+		draw();
+	});
+	draw();
 	Webtop.cm({
 		"File": {
 			"New": {
@@ -39,14 +47,7 @@ function draw() {
 			"Paste":null
 		}, 
 		"Help": null
-	},obj);
-}
-
-window.onload = function() {
-	Webtop.events.attach(this, Webtop.c('NEW_TASK'), function() {
-		draw();
-	});
-	draw();
+	},document.getElementById('tasks'));
 };
 </script>
 
