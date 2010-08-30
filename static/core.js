@@ -37,23 +37,54 @@ var Webtop = (function() {
 		/**
 		* Function called on first load
 		*/
+
 		function startup() {
 			$(doc.body).bind("selectstart", function(evt) { evt.preventDefault(); });
 			canvas = new Raphael("canvas",0, 0, $(window).width(), $(window).height());
-			$("#canvas").mousedown(function(e) {
-				x = e.offsetX;
-				y = e.offsetY;
+			$("#canvas").mousedown(function(e,c) {
+				var e = c || e;
+				console.log("Canvas Down",e);
+				x = e.pageX;
+				y = e.pageY;
 				line = new Line(x, y, x, y, canvas);
 				$("#canvas").bind('mousemove', function(e) {
-					x = e.offsetX;
-					y = e.offsetY;
+					x = e.pageX;
+					y = e.pageY;
 					line.updateEnd(x, y);
 				});
 			});
-
-			$("#canvas").mouseup(function(e) {
+			
+			$("#canvas").mouseup(function(e,c) {
+				
+				console.log(e);
+				var node = nodeAround($('circle'), {x: e.clientX, y: e.clientY});
+				if(node) {
+					routes.push([]);
+				}
+				console.log(node);
 				$("#canvas").unbind('mousemove');
 			});
+		}
+		
+		/**
+		* Check an array of SVG elements that a point exists within its position
+		* @param elems Array of SVG elements
+		* @param point Point to check in x/y
+		* @param threshold Amount of pixels leeway
+		*/
+		function nodeAround(elems, point, threshold) {
+			var threshold = threshold || 10, i = 0, l = elems.length, temp;
+			for(;i<l;++i) {
+				//cache for space
+				temp = [elems[i].cx.baseVal.value, elems[i].cy.baseVal.value];
+				//check if the point is located around the element with the threshold
+				if(temp[0] - threshold < point.x && temp[0] + threshold > point.x && 
+				   temp[1] - threshold < point.y && temp[1] + threshold > point.y) {
+					return elems[i];
+				}
+			}
+			//else return false
+			return false;
 		}
 		
 		//Public methods and properties
@@ -156,7 +187,8 @@ var Webtop = (function() {
 				obj.id = "app"+index;
 				$obj.addClass("window").css({width: options.width, height: options.height + PX, zIndex: (options.alwaysOntop ? 1000 : z++)})
 					.html(
-						div({"class": "window-header"},
+						(options.route !== false ? em({'class': 'input'}) + em({'class': 'output'}) : '')
+						+div({"class": "window-header"},
 							strong(options.title), 
 							span(a({"class": "min"},"[-]"),a({"class": "max"},"[_]"),a({"class": "close"},"[x]")))
 						+div({"class": "window-inner loading"})
@@ -211,26 +243,17 @@ var Webtop = (function() {
 					.bind("mousedown", function() { controls.focus(); })
 					.dblclick(function() { controls.maximize(); });
 				
-				//Add route bubbles
-				if(options.route !== false) {
-					//Beware: Pixel precision magic numbers
-					input = canvas.circle(pint($obj.css("left"))-2,pint($obj.css("top"))+12,5);
-					input.attr({'stroke': '#8A5B00', 'stroke-width': 1, 'fill': '#FFA800'});
-					input.mousedown(function(e) {
-						console.log(e);
+				if(options.routes !== false) {
+					$("em",obj).mousedown(function(e) {
+						console.log("Node",e);
+						$("#canvas").trigger('mousedown',e);
 					});
-					
-					output = canvas.circle(pint($obj.css("left"))+pint($obj.css("width"))+4,pint($obj.css("top"))+12,5);
-					output.attr({'stroke': '#005080', 'stroke-width': 1, 'fill': '#00A2FF'});
 				}
-				
 				
 				if(options.draggable !== false) {
 					$obj.draggable({handle: "div.window-header", scroll:false, containment:'document',
 						start: function() {
 							startGhost(this);
-							input.attr({opacity: 0});
-							output.attr({opacity: 0});
 						},
 						
 						drag: function(e) {
@@ -244,10 +267,6 @@ var Webtop = (function() {
 							
 							tasks[index].dim.x = co[0];
 							tasks[index].dim.y = co[1];
-							
-							input.attr({cx: co[0] - 2, cy: co[1] + 12, opacity: 1});
-							output.attr({cx: co[0] + co[2] + 4, cy: co[1] + 12, opacity: 1});
-							
 						}
 					});
 				}

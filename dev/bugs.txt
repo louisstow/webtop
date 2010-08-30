@@ -10,7 +10,7 @@
 
 10/08 - IFrame stealing mouse events in FF
 FIXED + 10/08 - Bizare Chrome error when maximize a task, and focus another (replace height 100% with fixed value)
-10/08 - Speed issues in FF, related to mouse and opacity
+REPRO + 10/08 (Can't be certain) - Speed issues in FF, related to mouse and opacity
 11/08 - Can't access IFrame Window in IE 
 29/08 - Need to link apps together
 29/08 - Must snap within a 5px radius
