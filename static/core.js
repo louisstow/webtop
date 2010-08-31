@@ -15,6 +15,8 @@ var Webtop = (function() {
 			pint = parseInt,
 			canvas, //Raphael
 			routes = [], //Array of app associations or 'routes'
+			$canvas, //cached canvas jQ obj
+			line, //active line
 			//READ ONLY constants
 			consts = {
 				HEADER_HEIGHT: 25, //height of window header in PX
@@ -37,54 +39,29 @@ var Webtop = (function() {
 		/**
 		* Function called on first load
 		*/
-
 		function startup() {
 			$(doc.body).bind("selectstart", function(evt) { evt.preventDefault(); });
 			canvas = new Raphael("canvas",0, 0, $(window).width(), $(window).height());
-			$("#canvas").mousedown(function(e,c) {
-				var e = c || e;
-				console.log("Canvas Down",e);
-				x = e.pageX;
-				y = e.pageY;
-				line = new Line(x, y, x, y, canvas);
-				$("#canvas").bind('mousemove', function(e) {
-					x = e.pageX;
-					y = e.pageY;
-					line.updateEnd(x, y);
-				});
-			});
-			
-			$("#canvas").mouseup(function(e,c) {
-				
-				console.log(e);
-				var node = nodeAround($('circle'), {x: e.clientX, y: e.clientY});
-				if(node) {
-					routes.push([]);
-				}
-				console.log(node);
-				$("#canvas").unbind('mousemove');
-			});
+			$canvas = $("#canvas");
 		}
 		
 		/**
-		* Check an array of SVG elements that a point exists within its position
-		* @param elems Array of SVG elements
-		* @param point Point to check in x/y
-		* @param threshold Amount of pixels leeway
+		* Start drawing a line
 		*/
-		function nodeAround(elems, point, threshold) {
-			var threshold = threshold || 10, i = 0, l = elems.length, temp;
-			for(;i<l;++i) {
-				//cache for space
-				temp = [elems[i].cx.baseVal.value, elems[i].cy.baseVal.value];
-				//check if the point is located around the element with the threshold
-				if(temp[0] - threshold < point.x && temp[0] + threshold > point.x && 
-				   temp[1] - threshold < point.y && temp[1] + threshold > point.y) {
-					return elems[i];
-				}
-			}
-			//else return false
-			return false;
+		function startLine(e, index) {
+			x = e.pageX;
+			y = e.pageY;
+			line = new Line(x, y, x, y, canvas, index);
+			$canvas.bind('mousemove', function(e,c) {
+				var e = c || e; //accept the parent event over default
+				x = e.pageX;
+				y = e.pageY;
+				line.updateEnd(x, y);
+			});
+			$canvas.mouseup(function(e) {
+				if(line) line.destroy();
+			});
+			return line;
 		}
 		
 		//Public methods and properties
@@ -173,8 +150,9 @@ var Webtop = (function() {
 					$obj = $(obj),
 					options = APPLIST[id],
 					index = tasks.length,
-					input, //connector nodes
-					output;
+					$input, //jQ cached
+					$output,
+					lines = []; //lines
 				
 				if(options.single) { //if single instance, look for one opened
 					var found = this.api.findTask(id);
@@ -244,9 +222,23 @@ var Webtop = (function() {
 					.dblclick(function() { controls.maximize(); });
 				
 				if(options.routes !== false) {
-					$("em",obj).mousedown(function(e) {
-						console.log("Node",e);
-						$("#canvas").trigger('mousedown',e);
+					//Start the line draw on node mousedown
+					var $ems = $("em",obj);
+					$input = $($ems[0]);
+					$output = $($ems[1]);
+					
+					$ems.mousedown(function(e) {
+						line = startLine(e,index);	
+						lines.push({l: line, i: $(this).hasClass("input"), s: true});
+					}).mouseup(function() {
+						$canvas.unbind('mousemove');
+						//correct ordering: [output, input]
+						var arr = ($(this).hasClass("input") ? [line.getIndex(),index] : [index,line.getIndex()]);
+						routes.push(arr);
+						lines.push({l: line, i: $(this).hasClass("input"), s: false});
+						line = null;
+					}).mousemove(function(e) {
+						$canvas.trigger('mousemove',e);
 					});
 				}
 				
@@ -254,19 +246,33 @@ var Webtop = (function() {
 					$obj.draggable({handle: "div.window-header", scroll:false, containment:'document',
 						start: function() {
 							startGhost(this);
-						},
-						
-						drag: function(e) {
-							
+							$canvas.hide();
 						},
 						
 						stop: function() {
+							$canvas.show();
 							stopGhost(this);
 							//update the position of the task
 							var co = [pint($(this).css("left")), pint($(this).css("top")), $(this).width()];
 							
 							tasks[index].dim.x = co[0];
 							tasks[index].dim.y = co[1];
+							
+							if(lines.length) {
+								var ipos = $input.offset(), opos = $output.offset(), 
+									co = [ipos.left, ipos.top, opos.left, opos.top],
+									current;
+								for(var i = 0; i < lines.length; i++) {
+									current = lines[i];
+									if(current.i) { //input
+										current.s ? lines[i].l.updateStart(co[0] + 10, co[1] + 15) :
+													lines[i].l.updateEnd(co[0] + 10, co[1] + 15);
+									} else { //output
+										current.s ? lines[i].l.updateStart(co[2] + 15, co[3] + 15) :
+													lines[i].l.updateEnd(co[2] + 15, co[3] + 15);
+									}
+								}
+							}
 						}
 					});
 				}
@@ -338,6 +344,10 @@ var Webtop = (function() {
 				return consts[name];
 			},
 			
+			routes: function() {
+				return routes;
+			},
+			
 			/**
 			* Context menu
 			* @example Webtop.cm({ }, $('#context-menu'))
@@ -392,23 +402,22 @@ var Webtop = (function() {
 		};
 })();
 
-function Line(startX, startY, endX, endY, raphael) {
+function Line(startX, startY, endX, endY, raphael, index) {
     var start = {
         x: startX,
         y: startY
-    };
-    var end = {
+    },
+	end = {
         x: endX,
         y: endY
-    };
-    var getPath = function() {
+    }, 
+	getPath = function() {
         return "M" + start.x + " " + start.y + " L" + end.x + " " + end.y;
-    };
-    var redraw = function() {
+    },
+	redraw = function() {
         node.attr("path", getPath());
-    }
-
-    var node = raphael.path(getPath());
+    },
+	node = raphael.path(getPath());
     return {
         updateStart: function(x, y) {
             start.x = x;
@@ -421,7 +430,13 @@ function Line(startX, startY, endX, endY, raphael) {
             end.y = y;
             redraw();
             return this;
-        }
+        },
+		destroy: function() {
+			node.remove();
+		},
+		getIndex: function() {
+			return index;
+		}
     };
 };
 

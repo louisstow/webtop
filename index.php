@@ -19,7 +19,7 @@ $(document).ready(function() {
 <title>Meccamputechture</title>
 </head>
 <body>
-<button onclick="Webtop.run('mYx73s')">Run App</button><button onclick="Webtop.run('coheed')">Run App 2</button>
+<div id="quicklaunch"><button onclick="Webtop.run('mYx73s')">Run App</button><button onclick="Webtop.run('coheed')">Run App 2</button></div>
 <div id="canvas"></div>
 
 </body>

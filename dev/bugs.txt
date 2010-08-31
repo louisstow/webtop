@@ -12,9 +12,11 @@
 FIXED + 10/08 - Bizare Chrome error when maximize a task, and focus another (replace height 100% with fixed value)
 REPRO + 10/08 (Can't be certain) - Speed issues in FF, related to mouse and opacity
 11/08 - Can't access IFrame Window in IE 
-29/08 - Need to link apps together
-29/08 - Must snap within a 5px radius
-29/08 - Musn't draw a line within 2px
+FIXED + 29/08 - Need to link apps together
+FIXED + 29/08 - Must snap within a 5px radius
+FIXED + 29/08 - Musn't draw a line within 2px
+31/08 - Only allow one link per two nodes
+31/08 - Only allow input to output and output to input!
 
 Read about Kohana
 

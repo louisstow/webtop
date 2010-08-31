@@ -36,6 +36,7 @@ div.window-inner iframe { width:100%; height:100%  }
 #tasks li { display:inline; margin-right:10px;  }
 #tasks li a { border:1px solid #000; padding:2px 5px }
 #start-button { height:50px; border-right:solid #000; border-width:0 1px 0 0; background:#fff; margin:0 10px 0 0; padding:0 20px 0 10px }
+#quicklaunch { position:absolute; z-index:1000 }
 
 .ui-context-menu {
 	z-index:1000;
