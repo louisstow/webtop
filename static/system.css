@@ -25,6 +25,10 @@ a { outline: 0 }
 .window em.input { left:-9px; background-position:-24px 0 }
 .window em.output { right:-9px }
 
+.input.over { background-position:-24px -29px !important }
+.output.over { background-position:0 -29px }
+
+
 div.window-inner { width:100%; }
 div.window-inner iframe { width:100%; height:100%  }
 

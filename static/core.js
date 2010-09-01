@@ -17,6 +17,7 @@ var Webtop = (function() {
 			routes = [], //Array of app associations or 'routes'
 			$canvas, //cached canvas jQ obj
 			line, //active line
+			nop = function(evt) { evt.preventDefault(); };
 			//READ ONLY constants
 			consts = {
 				HEADER_HEIGHT: 25, //height of window header in PX
@@ -40,7 +41,7 @@ var Webtop = (function() {
 		* Function called on first load
 		*/
 		function startup() {
-			$(doc.body).bind("selectstart", function(evt) { evt.preventDefault(); });
+			$(doc.body).bind("selectstart", nop);
 			canvas = new Raphael("canvas",0, 0, $(window).width(), $(window).height());
 			$canvas = $("#canvas");
 		}
@@ -48,10 +49,10 @@ var Webtop = (function() {
 		/**
 		* Start drawing a line
 		*/
-		function startLine(e, index) {
+		function startLine(e, index, isInput) {
 			x = e.pageX;
 			y = e.pageY;
-			line = new Line(x, y, x, y, canvas, index);
+			line = new Line(x, y, canvas, index, isInput);
 			$canvas.bind('mousemove', function(e,c) {
 				var e = c || e; //accept the parent event over default
 				x = e.pageX;
@@ -62,6 +63,40 @@ var Webtop = (function() {
 				if(line) line.destroy();
 			});
 			return line;
+		}
+		
+		function updateLines(lines, $input, $output) {
+			if(lines.length) {
+				var ipos = $input.offset(), opos = $output.offset(), 
+					co = [ipos.left, ipos.top, opos.left, opos.top],
+					current;
+				for(var i = 0; i < lines.length; i++) {
+					current = lines[i];
+					if(current.i) { //input
+						current.s ? lines[i].l.updateStart(co[0] + 10, co[1] + 15) :
+									lines[i].l.updateEnd(co[0] + 10, co[1] + 15);
+					} else { //output
+						current.s ? lines[i].l.updateStart(co[2] + 15, co[3] + 15) :
+									lines[i].l.updateEnd(co[2] + 15, co[3] + 15);
+					}
+				}
+			}
+		}
+		
+		/**
+		* Check if a route exists
+		* @param from Task index from
+		* @param to Task index to
+		* @return Boolean if exists or not
+		*/
+		function hasRoute(from, to) {
+			var i = 0, l = routes.length;
+			for(;i<l;i++) {
+				if(routes[i][0] == from && routes[i][1] == to) {
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		//Public methods and properties
@@ -212,12 +247,11 @@ var Webtop = (function() {
 				});
 				
 				//Add events
-				var _preventDefault = function(evt) { evt.preventDefault(); },
-					startGhost = function(context) { $iframe.hide(); $(context).addClass("drag"); },
+				var startGhost = function(context) { $iframe.hide(); $(context).addClass("drag"); },
 					stopGhost = function(context) { $iframe.show(); $(context).removeClass("drag"); };
 				$("div.window-header", obj)
-					.bind("dragstart", _preventDefault)
-					.bind("selectstart", _preventDefault)
+					.bind("dragstart", nop)
+					.bind("selectstart", nop)
 					.bind("mousedown", function() { controls.focus(); })
 					.dblclick(function() { controls.maximize(); });
 				
@@ -227,18 +261,47 @@ var Webtop = (function() {
 					$input = $($ems[0]);
 					$output = $($ems[1]);
 					
-					$ems.mousedown(function(e) {
-						line = startLine(e,index);	
-						lines.push({l: line, i: $(this).hasClass("input"), s: true});
+					$ems.bind("dragstart",nop).bind("selectstart",nop).mousedown(function(e) {
+						var isInput = $(this).hasClass("input");
+						line = startLine(e, index, isInput);	
+						lines.push({l: line, i: isInput, s: true});
 					}).mouseup(function() {
 						$canvas.unbind('mousemove');
+						var arr, flag = true;
 						//correct ordering: [output, input]
-						var arr = ($(this).hasClass("input") ? [line.getIndex(),index] : [index,line.getIndex()]);
-						routes.push(arr);
-						lines.push({l: line, i: $(this).hasClass("input"), s: false});
-						line = null;
+						if(line.getIndex() == index) flag = false;
+						if($(this).hasClass("input")) { //input
+							//check if route exists or is the wrong node
+							if(hasRoute(line.getIndex(), index) || line.isInput()) {
+								flag = false;
+							}
+							arr = [line.getIndex(),index];
+						} else { //if output
+							if(hasRoute(index,line.getIndex()) || !line.isInput()) {
+								flag = false;
+							}
+							arr = [index,line.getIndex()];
+						}
+						if(flag) {
+							routes.push(arr);
+							lines.push({l: line, i: $(this).hasClass("input"), s: false});
+							line = null;
+						} else {
+							line.destroy();
+							line = null;
+						}
 					}).mousemove(function(e) {
 						$canvas.trigger('mousemove',e);
+					}).mouseover(function(e) {
+						//If compatible node, display over graphic
+						if(line && line.getIndex() !== index &&
+							($(this).hasClass("input") && !(hasRoute(line.getIndex(), index) || line.isInput()) ||
+							$(this).hasClass("output") && !(hasRoute(index, line.getIndex()) || !line.isInput()))) {
+							
+							$(this).addClass("over");
+						}
+					}).mouseout(function(e) {
+						$(this).removeClass("over");
 					});
 				}
 				
@@ -258,21 +321,7 @@ var Webtop = (function() {
 							tasks[index].dim.x = co[0];
 							tasks[index].dim.y = co[1];
 							
-							if(lines.length) {
-								var ipos = $input.offset(), opos = $output.offset(), 
-									co = [ipos.left, ipos.top, opos.left, opos.top],
-									current;
-								for(var i = 0; i < lines.length; i++) {
-									current = lines[i];
-									if(current.i) { //input
-										current.s ? lines[i].l.updateStart(co[0] + 10, co[1] + 15) :
-													lines[i].l.updateEnd(co[0] + 10, co[1] + 15);
-									} else { //output
-										current.s ? lines[i].l.updateStart(co[2] + 15, co[3] + 15) :
-													lines[i].l.updateEnd(co[2] + 15, co[3] + 15);
-									}
-								}
-							}
+							updateLines(lines, $input, $output);
 						}
 					});
 				}
@@ -281,15 +330,19 @@ var Webtop = (function() {
 					$obj.resizable({containment:'document', autoHide: true, alsoResize: inner,
 						start: function() {
 							startGhost(this);
+							$canvas.hide();
 							if(tasks[index].state === Webtop.c('MAXIMIZED')) {
 								controls.maximize();
 							}
 						}, 
 						stop: function() {
 							stopGhost(this);
+							$canvas.show();
 							//update the dimensions of the task
 							tasks[index].dim.w = $(this).css("width");
 							tasks[index].dim.h = parseInt($(this).css("height"),10);
+							
+							updateLines(lines, $input, $output);
 						}
 					});
 				}
@@ -402,14 +455,14 @@ var Webtop = (function() {
 		};
 })();
 
-function Line(startX, startY, endX, endY, raphael, index) {
+function Line(startX, startY, raphael, index, isInput) {
     var start = {
         x: startX,
         y: startY
     },
 	end = {
-        x: endX,
-        y: endY
+        x: startX,
+        y: startY
     }, 
 	getPath = function() {
         return "M" + start.x + " " + start.y + " L" + end.x + " " + end.y;
@@ -436,6 +489,9 @@ function Line(startX, startY, endX, endY, raphael, index) {
 		},
 		getIndex: function() {
 			return index;
+		},
+		isInput: function() {
+			return isInput;
 		}
     };
 };
