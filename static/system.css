@@ -27,6 +27,8 @@ a { outline: 0 }
 
 .input.over { background-position:-24px -29px !important }
 .output.over { background-position:0 -29px }
+.input.on { background-position:-24px -58px !important }
+.output.on { background-position:0 -58px !important }
 
 
 div.window-inner { width:100%; }

@@ -15,7 +15,7 @@ APPLIST = {
 	"coheed": {
 		title: "280 Slides - Untitled",
 		width: "600px",
-		height: 400,
+		height: 400
 		//src: 'http://280slides.com/Editor/'
 	},
 	

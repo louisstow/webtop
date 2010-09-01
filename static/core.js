@@ -57,10 +57,13 @@ var Webtop = (function() {
 				var e = c || e; //accept the parent event over default
 				x = e.pageX;
 				y = e.pageY;
-				line.updateEnd(x, y);
+				if(line) line.updateEnd(x, y);
 			});
 			$canvas.mouseup(function(e) {
-				if(line) line.destroy();
+				if(line) {
+					line.destroy();
+					line = null;
+				}
 			});
 			return line;
 		}
@@ -285,11 +288,9 @@ var Webtop = (function() {
 						if(flag) {
 							routes.push(arr);
 							lines.push({l: line, i: $(this).hasClass("input"), s: false});
-							line = null;
-						} else {
-							line.destroy();
-							line = null;
-						}
+							$(this).addClass("on");
+						} else line.destroy();
+						line = null;
 					}).mousemove(function(e) {
 						$canvas.trigger('mousemove',e);
 					}).mouseover(function(e) {
@@ -455,6 +456,13 @@ var Webtop = (function() {
 		};
 })();
 
+/**
+* Generate a random colour in hex
+*/
+function randomHex() {
+	return "#" + Math.round(0xffffff * Math.random()).toString(16);
+}
+
 function Line(startX, startY, raphael, index, isInput) {
     var start = {
         x: startX,
@@ -471,6 +479,7 @@ function Line(startX, startY, raphael, index, isInput) {
         node.attr("path", getPath());
     },
 	node = raphael.path(getPath());
+	node.attr({"stroke": randomHex(), "stroke-width": 2});
     return {
         updateStart: function(x, y) {
             start.x = x;
