@@ -439,7 +439,7 @@ var Webtop = (function() {
 					for(;i<l;i++) {
 						if(routes[i][0] === from && routes[i][1] === to) {
 							//remove from array
-							routes[i][2].remove();
+							routes[i][2].destroy();
 							routes.splice(i,1);
 							break;
 						}
@@ -447,13 +447,13 @@ var Webtop = (function() {
 				},
 				
 				destroyAll: function(id) {
-					var i = 0, l = routes.length;
-					for(;i<l;i++) {
-						if(routes[i][0] === id || routes[i][1] === id) {
+					var i = 0;
+					for(;i<routes.length;i++) {
+						if(routes[i] !== undefined && routes[i][0] === id || routes[i][1] === id) {
 							//remove from array
-							route[2].destroy();
+							routes[i][2].destroy();
 							routes.splice(i,1);
-							break;
+							i--;
 						}
 					}
 				},
