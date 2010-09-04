@@ -20,9 +20,11 @@ function draw() {
 }
 
 window.onload = function() {
+
 	Webtop.events.attach(this, Webtop.c('NEW_TASK'), function() {
 		draw();
 	});
+	
 	draw();
 	Webtop.cm({
 		"File": {

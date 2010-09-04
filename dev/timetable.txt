@@ -1,0 +1,44 @@
+July 10
+· Setup the git, work out how to manage that easier
+
+August 10
+· JS Frontend environment (window controls, running/destroying apps, window options, libs)
+
+September 10
+· Taskbar
+· Context Menu
+
+October 10
+· Design the database
+· Plan files and how permissions will work
+· Work on all the CRUD in PHP
+
+November 10
+· Continue with CRUD
+
+December 10
+· 
+
+January 11
+
+February 11
+
+March 11
+
+April 11
+
+May 11
+
+June 11
+
+July 11
+
+August 11
+
+September 11
+
+October 11
+
+November 11
+
+December 11

@@ -4,7 +4,7 @@ APPLIST = {
 		width: "400px",
 		height: 200,
 		single: true,
-		//src: 'http://sketch.processing.org/', //delete this
+		src: 'router.html', //delete this
 		css: {
 			top:"50px",
 			left: "50px",
@@ -13,10 +13,17 @@ APPLIST = {
 	},
 	
 	"coheed": {
-		title: "280 Slides - Untitled",
-		width: "600px",
-		height: 400
-		//src: 'http://280slides.com/Editor/'
+		title: "Incoming",
+		width: "400px",
+		height: 300,
+		src: 'irouter.html'
+	},
+	
+	"trans": {
+		title: "Tranform",
+		width: "200px",
+		height: 50,
+		src: 'irouter2.html'
 	},
 	
 	"taskbar": {

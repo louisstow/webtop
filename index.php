@@ -19,7 +19,11 @@ $(document).ready(function() {
 <title>Meccamputechture</title>
 </head>
 <body>
-<div id="quicklaunch"><button onclick="Webtop.run('mYx73s')">Run App</button><button onclick="Webtop.run('coheed')">Run App 2</button></div>
+<div id="quicklaunch">
+	<button onclick="Webtop.run('mYx73s')">Run App 1</button>
+	<button onclick="Webtop.run('trans')">Run App 2</button>
+	<button onclick="Webtop.run('coheed')">Run App 3</button>
+</div>
 <div id="canvas"></div>
 
 </body>

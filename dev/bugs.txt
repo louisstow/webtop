@@ -33,3 +33,4 @@ Read about Kohana
 18/08 - Context menu e.g. Webtop.cm({}, button)
 19/08 - New UI paradigm (scroll based)
 26/08 - NOD (Network Oriented Desktop)
+01/09 - Need a better Webtop namespace for each app. Combine Webtop with App. Webtop = Webtop.api + get(3);

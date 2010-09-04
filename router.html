@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$("#routeme").click(function() {
+		App.route.out($("#text").val());
+	});
+});
+</script>
+</head>
+<body>
+<button id="routeme">Start Route</button><br />
+<textarea id="text" style="width:95%; height:80px">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Aliquam rutrum dapibus pharetra. Nulla eleifend lorem at lacus eleifend blandit. 
+Vivamus congue sollicitudin mi, sed volutpat lacus gravida at. Nulla quis nisl 
+quis magna blandit accumsan sed sit amet nibh. Vivamus molestie suscipit enim 
+in mollis. Quisque tortor odio, porta non lobortis ac, hendrerit fermentum urna. 
+Praesent non justo turpis, quis ultricies risus. Donec sit amet sem nec ligula 
+viverra rhoncus. Phasellus ac tristique purus. Quisque nulla magna, facilisis 
+nec accumsan tempus, fermentum nec metus. Aliquam sit amet nibh eu sem auctor 
+congue. Duis accumsan accumsan ullamcorper. Nullam eu mauris nibh, id dignissim orci. 
+Pellentesque ac quam vitae elit placerat tincidunt nec vel enim. Vestibulum eu 
+interdum metus.
+</textarea>
+</body>
+</html>

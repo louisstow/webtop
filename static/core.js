@@ -8,11 +8,13 @@ var Webtop = (function() {
 		//Private methods and properties
 		var tasks = [], //array of current tasks
 			handlers = [], //array of event handlers
+			rhandlers = [], //array of route handlers
 			z = 0, //z-index counter
 			guid = 1, //unique ID for general use
 			doc = window.document,
 			PX = "px",
 			pint = parseInt,
+			splice = Array.prototype.splice,
 			canvas, //Raphael
 			routes = [], //Array of app associations or 'routes'
 			$canvas, //cached canvas jQ obj
@@ -123,6 +125,7 @@ var Webtop = (function() {
 							z--;
 						}
 						Webtop.events.dispatch(Webtop.c('NEW_TASK'));
+						Webtop.route.destroyAll(id);
 					},
 					
 					/**
@@ -174,7 +177,32 @@ var Webtop = (function() {
 							app.state = Webtop.c('DEFAULT');
 						}
 						app.state = Math.abs(app.state);
-					}
+					},
+					
+					route: {
+						out: function(msg) {
+							var h, i = 0, l = routes.length, j, hl;
+							
+							for(;i<l;i++) {
+								if(routes[i][0] === id) {
+									//Loop over handlers
+									j=0;
+									h = rhandlers[routes[i][1]];
+									hl = h.length;
+									
+									for(;j<h.length;j++)
+										h[j](msg);
+								}
+							}
+						},
+						
+						into: function(callback) {
+							if(rhandlers[id] === undefined) rhandlers[id] = []; //init handler array
+							rhandlers[id].push(callback);
+						}
+					},
+					
+					id: id
 				};
 			},
 			
@@ -206,7 +234,7 @@ var Webtop = (function() {
 						(options.route !== false ? em({'class': 'input'}) + em({'class': 'output'}) : '')
 						+div({"class": "window-header"},
 							strong(options.title), 
-							span(a({"class": "min"},"[-]"),a({"class": "max"},"[_]"),a({"class": "close"},"[x]")))
+							span(a({"class": "min"}),a({"class": "max"}),a({"class": "close"})))
 						+div({"class": "window-inner loading"})
 					);
 				
@@ -220,7 +248,7 @@ var Webtop = (function() {
 				//create the iframe
 				var iframe = doc.createElement("iframe"), inner = $('div.window-inner', obj);
 				
-				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: options.src  }).hide();
+				$(iframe).attr({frameBorder: '0', allowTransparency: 'true', src: options.src}).hide();
 				//"app.php?id="+id+"&c="+(new Date()).getTime() // src: ... })
 				
 				inner.append(iframe).css("height", options.height - Webtop.c('HEADER_HEIGHT') + PX);
@@ -271,24 +299,26 @@ var Webtop = (function() {
 					}).mouseup(function() {
 						$canvas.unbind('mousemove');
 						var arr, flag = true;
+						
 						//correct ordering: [output, input]
+						if(!line) return;
 						if(line.getIndex() == index) flag = false;
 						if($(this).hasClass("input")) { //input
 							//check if route exists or is the wrong node
 							if(hasRoute(line.getIndex(), index) || line.isInput()) {
 								flag = false;
 							}
-							arr = [line.getIndex(),index];
+							arr = [line.getIndex(),index,line];
 						} else { //if output
 							if(hasRoute(index,line.getIndex()) || !line.isInput()) {
 								flag = false;
 							}
-							arr = [index,line.getIndex()];
+							arr = [index,line.getIndex(),line];
 						}
 						if(flag) {
 							routes.push(arr);
 							lines.push({l: line, i: $(this).hasClass("input"), s: false});
-							$(this).addClass("on");
+							line.setRoute(arr);
 						} else line.destroy();
 						line = null;
 					}).mousemove(function(e) {
@@ -351,6 +381,8 @@ var Webtop = (function() {
 				Webtop.events.dispatch(Webtop.c('NEW_TASK')); 
 			},
 			
+			
+			
 			api: {
 				findTask: function(id) {
 					var found = [], i = 0, l;
@@ -385,7 +417,7 @@ var Webtop = (function() {
 					if(h !== undefined) {
 						for(l = h.length; i<l; i++) {
 							attached = h[i];
-							attached.handler.call(attached.obj);
+							attached.handler.apply(attached.obj, [value]);
 						}
 					}
 				}
@@ -396,6 +428,42 @@ var Webtop = (function() {
 			*/
 			c: function(name) {
 				return consts[name];
+			},
+			
+			route: {
+				/**
+				* Destroy a link between two apps
+				*/
+				destroy: function(from, to) {
+					var i = 0, l = routes.length;
+					for(;i<l;i++) {
+						if(routes[i][0] === from && routes[i][1] === to) {
+							//remove from array
+							routes[i][2].remove();
+							routes.splice(i,1);
+							break;
+						}
+					}
+				},
+				
+				destroyAll: function(id) {
+					var i = 0, l = routes.length;
+					for(;i<l;i++) {
+						if(routes[i][0] === id || routes[i][1] === id) {
+							//remove from array
+							route[2].destroy();
+							routes.splice(i,1);
+							break;
+						}
+					}
+				},
+				
+				/**
+				* Create a route between two apps
+				*/
+				create: function(from, to) {
+					routes.push([from, to]);
+				}
 			},
 			
 			routes: function() {
@@ -478,8 +546,13 @@ function Line(startX, startY, raphael, index, isInput) {
 	redraw = function() {
         node.attr("path", getPath());
     },
+	route,
 	node = raphael.path(getPath());
 	node.attr({"stroke": randomHex(), "stroke-width": 2});
+	node.dblclick(function() {
+		Webtop.route.destroy(route[0], route[1]);
+	});
+	
     return {
         updateStart: function(x, y) {
             start.x = x;
@@ -501,6 +574,9 @@ function Line(startX, startY, raphael, index, isInput) {
 		},
 		isInput: function() {
 			return isInput;
+		},
+		setRoute: function(r) {
+			route = r;
 		}
     };
 };

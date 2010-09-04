@@ -13,13 +13,19 @@ a { outline: 0 }
 .hidden { border-width:0; -moz-border-radius-topleft:0; -webkit-border-top-left-radius:0;
 	-moz-border-radius-topright:0; -webkit-border-top-right-radius:0 }
 
-.window-header { border:1px solid #000; cursor:default; padding:2px; height:20px; margin:-1px -1px 0 -1px; background:#70C3FA; 
+.window-header { border:1px solid #000; cursor:default; padding:2px; height:20px; margin:-1px -1px 0 -1px; background:#70C3FA url('../images/ui-rails.png') repeat-x; 
 	-moz-border-radius-topleft:3px; -webkit-border-top-left-radius:4px;
 	-moz-border-radius-topright:3px; -webkit-border-top-right-radius:4px  
 }
 .window-header strong { float:left; padding:1px 0 0 5px }
-.window-header span { float:right; margin:5px 5px 0 0; display:block; width:100px; height:18px; text-align:right }
-.window-header span a { border:1px solid #000; padding:0 3px 1px 3px; text-decoration:none; line-height:6px; font-size:10px; margin-right:3px }
+.window-header span { float:right; margin:2px 0; display:block; width:75px; height:18px; text-align:right }
+.window-header span a { border:1px dotted #005d92; padding:0 3px 1px 3px; margin-right:3px; 
+	background:url('../images/ui-nodes.png') no-repeat; display:block; width:12px; height:13px; float:left }
+
+.window-header span a:hover { border-style:solid }	
+span a.close { background-position:2px -63px }
+span a.max { background-position:-30px -63px }
+span a.min { background-position:-13px -63px }
 
 .window em { display:block; position:absolute; background:url('../images/ui-nodes.png') no-repeat; width:24px; height:29px; margin-top:-3px; z-index:9999 }
 .window em.input { left:-9px; background-position:-24px 0 }
@@ -27,14 +33,11 @@ a { outline: 0 }
 
 .input.over { background-position:-24px -29px !important }
 .output.over { background-position:0 -29px }
-.input.on { background-position:-24px -58px !important }
-.output.on { background-position:0 -58px !important }
-
 
 div.window-inner { width:100%; }
 div.window-inner iframe { width:100%; height:100%  }
 
-.loading { background:#efefef url('ajax-loader.gif') no-repeat 50% 50%; }
+.loading { background:#efefef url('../images/ajax-loader.gif') no-repeat 50% 50%; }
 .drag { background:#70C3FA; opacity:0.8;  }
 .hidden { display:none }
 
